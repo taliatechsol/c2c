@@ -1,0 +1,7 @@
+
+        Job Title: Senior AI Research Engineer
+        Company: OpenAI
+        Description: We are looking for engineers who can build LLMs from scratch. 
+        Requirements: Expert knowledge of Transformers, CUDA kernels, and large-scale training.
+        Required Stack: Python, PyTorch, C++, CUDA, Transformers.
+        
