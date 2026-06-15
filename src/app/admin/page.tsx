@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Building2, Users, Briefcase, Activity, CheckCircle2, AlertCircle } from "lucide-react";
+import { Users, Activity, CheckCircle2, AlertCircle, Server, Radio, Database } from "lucide-react";
 
 export default function AdminDashboard() {
   const [leads, setLeads] = useState<any[]>([]);
@@ -26,102 +26,122 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-          <Activity className="h-8 w-8 text-blue-600" />
-          Global Admin Dashboard
-        </h1>
-        <p className="mt-2 text-slate-600 dark:text-slate-400">
-          Monitor platform metrics and market intelligence leads in real-time.
-        </p>
-      </div>
-
-      {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
-            <Building2 className="h-8 w-8" />
+    <div className="min-h-screen bg-slate-950 text-slate-300 dark">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mb-8 border-b border-cyan-900/30 pb-6 flex items-center justify-between">
+          <div>
+            <h1 className="flex items-center gap-3 font-mono text-3xl font-black uppercase tracking-tight text-white">
+              <Activity className="h-8 w-8 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+              Global Admin Root
+            </h1>
+            <p className="mt-2 font-mono text-sm text-cyan-500/70">
+              REAL-TIME PLATFORM METRICS & MARKET INTELLIGENCE
+            </p>
           </div>
-          <div className="ml-5">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active Universities</p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">1</p>
+          <div className="hidden sm:flex items-center gap-2 rounded-full border border-cyan-800/50 bg-cyan-950/30 px-4 py-1.5 font-mono text-xs text-cyan-400">
+            <Radio className="h-3 w-3 animate-pulse text-cyan-400" />
+            <span>SYSTEM_ONLINE</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
-            <Users className="h-8 w-8" />
-          </div>
-          <div className="ml-5">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Students Onboarded</p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">42</p>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
-            <Briefcase className="h-8 w-8" />
-          </div>
-          <div className="ml-5">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Market Leads</p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{loading ? "..." : leads.length}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Leads Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Market Leads Intelligence</h2>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" /> Live Sync
-          </span>
-        </div>
-        
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-10 flex justify-center items-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        {/* Stats Summary */}
+        <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="group relative overflow-hidden rounded-xl border border-blue-900/30 bg-slate-900/50 p-6 shadow-[0_0_15px_rgba(59,130,246,0.05)] backdrop-blur-sm transition-all hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl transition-all group-hover:bg-blue-500/20" />
+            <div className="flex items-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-blue-800 bg-blue-950/50 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+                <Server className="h-6 w-6" />
+              </div>
+              <div className="ml-5">
+                <p className="font-mono text-xs font-medium uppercase tracking-wider text-blue-400/70">Active Nodes</p>
+                <p className="mt-1 font-mono text-3xl font-bold text-blue-50 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]">1</p>
+              </div>
             </div>
-          ) : error ? (
-            <div className="p-10 flex flex-col items-center justify-center text-red-500">
-              <AlertCircle className="h-10 w-10 mb-3" />
-              <p>Failed to load leads: {error}</p>
+          </div>
+
+          <div className="group relative overflow-hidden rounded-xl border border-emerald-900/30 bg-slate-900/50 p-6 shadow-[0_0_15px_rgba(16,185,129,0.05)] backdrop-blur-sm transition-all hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-500/10 blur-2xl transition-all group-hover:bg-emerald-500/20" />
+            <div className="flex items-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-emerald-800 bg-emerald-950/50 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                <Users className="h-6 w-6" />
+              </div>
+              <div className="ml-5">
+                <p className="font-mono text-xs font-medium uppercase tracking-wider text-emerald-400/70">Users Verified</p>
+                <p className="mt-1 font-mono text-3xl font-bold text-emerald-50 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]">42</p>
+              </div>
             </div>
-          ) : leads.length === 0 ? (
-            <div className="p-10 text-center text-slate-500 dark:text-slate-400">
-              <Briefcase className="h-10 w-10 mx-auto mb-3 opacity-50" />
-              <p>No market leads found.</p>
+          </div>
+
+          <div className="group relative overflow-hidden rounded-xl border border-purple-900/30 bg-slate-900/50 p-6 shadow-[0_0_15px_rgba(168,85,247,0.05)] backdrop-blur-sm transition-all hover:border-purple-500/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]">
+            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl transition-all group-hover:bg-purple-500/20" />
+            <div className="flex items-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-purple-800 bg-purple-950/50 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+                <Database className="h-6 w-6" />
+              </div>
+              <div className="ml-5">
+                <p className="font-mono text-xs font-medium uppercase tracking-wider text-purple-400/70">Market Entities</p>
+                <p className="mt-1 font-mono text-3xl font-bold text-purple-50 drop-shadow-[0_0_5px_rgba(168,85,247,0.5)]">
+                  {loading ? <span className="animate-pulse">...</span> : leads.length}
+                </p>
+              </div>
             </div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Job Title</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Company</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">AI Score</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                {leads.map((lead, idx) => (
-                  <tr key={lead.id || idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">
-                      {lead.job_title || lead.title || 'Unknown Title'}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                      {lead.company || lead.company_name || 'Unknown Company'}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400">
-                        {lead.ai_score !== undefined ? lead.ai_score : '-'}
-                      </div>
-                    </td>
+          </div>
+        </div>
+
+        {/* Leads Table */}
+        <div className="overflow-hidden rounded-xl border border-cyan-900/30 bg-slate-900/50 shadow-[0_0_20px_rgba(6,182,212,0.05)] backdrop-blur-sm">
+          <div className="flex items-center justify-between border-b border-cyan-900/30 bg-slate-900/80 px-6 py-4">
+            <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-cyan-100">Market Leads Stream</h2>
+            <span className="inline-flex items-center gap-1.5 rounded border border-emerald-800/50 bg-emerald-950/30 px-2 py-1 font-mono text-[10px] uppercase text-emerald-400">
+              <CheckCircle2 className="h-3 w-3" /> Live Sync
+            </span>
+          </div>
+          
+          <div className="overflow-x-auto">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center p-12">
+                <Activity className="mb-4 h-8 w-8 animate-pulse text-cyan-500 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+                <p className="font-mono text-xs text-cyan-500/70 uppercase">Establishing connection to databank...</p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center p-12 text-red-500">
+                <AlertCircle className="mb-3 h-10 w-10 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+                <p className="font-mono text-sm">ERR_CONNECTION: {error}</p>
+              </div>
+            ) : leads.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-12 text-slate-500">
+                <Database className="mb-3 h-10 w-10 opacity-50" />
+                <p className="font-mono text-sm">NO_RECORDS_FOUND</p>
+              </div>
+            ) : (
+              <table className="w-full text-left font-mono text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-cyan-900/30 bg-slate-950/50">
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-cyan-500/70">Identifier / Role</th>
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-cyan-500/70">Target Vector / Entity</th>
+                    <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-cyan-500/70">Confidence Score</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody className="divide-y divide-cyan-900/20">
+                  {leads.map((lead, idx) => (
+                    <tr key={lead.id || idx} className="group transition-colors hover:bg-cyan-950/20">
+                      <td className="px-6 py-4 font-medium text-slate-200 group-hover:text-cyan-100">
+                        {lead.job_title || lead.title || 'UNKNOWN_ROLE'}
+                      </td>
+                      <td className="px-6 py-4 text-slate-400 group-hover:text-cyan-200">
+                        {lead.company || lead.company_name || 'UNKNOWN_ENTITY'}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="inline-flex items-center justify-center rounded border border-cyan-800/50 bg-cyan-950/30 px-2 py-1 text-xs font-bold text-cyan-400 shadow-[0_0_5px_rgba(6,182,212,0.2)]">
+                          {lead.ai_score !== undefined ? lead.ai_score : '-'}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       </div>
     </div>
