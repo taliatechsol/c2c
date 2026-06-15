@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Loader2, Terminal, Shield, AlertTriangle, ChevronRight } from 'lucide-react';
 
 interface Question {
   id: string;
@@ -20,14 +21,28 @@ export default function Assessment() {
   const [error, setError] = useState('');
   const [studentId, setStudentId] = useState('');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [terminalLines, setTerminalLines] = useState<string[]>([]);
 
   useEffect(() => {
-    // Attempt to get student ID from local storage
     const id = localStorage.getItem('student_id') || `stu-${Date.now()}`;
     setStudentId(id);
-    localStorage.setItem('student_id', id); // ensure it's saved
+    localStorage.setItem('student_id', id);
 
     const fetchQuestions = async () => {
+      // Simulate terminal loading
+      const messages = [
+        "ESTABLISHING_SECURE_CONNECTION...",
+        "DECRYPTING_ORDEAL_PROTOCOLS...",
+        "FETCHING_PSYCHOMETRIC_BANK...",
+        "INITIALIZING_C2C_ENVIRONMENT...",
+        "READY."
+      ];
+      
+      for (let i = 0; i < messages.length; i++) {
+        setTerminalLines(prev => [...prev, messages[i]]);
+        await new Promise(resolve => setTimeout(resolve, 400));
+      }
+
       try {
         const res = await fetch('/api/assessment/generate?num_per_section=5');
         if (!res.ok) throw new Error('Failed to fetch questions');
@@ -57,10 +72,9 @@ export default function Assessment() {
         setCurrentIndex(prev => prev + 1);
         setIsTransitioning(false);
       } else {
-        // Finished all questions, submit
         await submitAssessment(newResponses);
       }
-    }, 300); // 300ms transition
+    }, 400);
   };
 
   const submitAssessment = async (finalResponses: any) => {
@@ -86,10 +100,26 @@ export default function Assessment() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center font-mono">
-        <div className="text-cyan-400 text-xl flex flex-col items-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-400 mb-4"></div>
-          <div>INITIALIZING_ORDEAL...</div>
+      <div className="min-h-screen bg-[#0e1416] flex items-center justify-center p-6 font-mono">
+        <div className="w-full max-w-2xl bg-black/40 border border-[#2fd9f4]/20 p-8 rounded-lg shadow-[0_0_50px_rgba(47,217,244,0.05)]">
+          <div className="flex items-center gap-2 mb-6 border-b border-[#2fd9f4]/10 pb-4">
+            <Terminal className="w-5 h-5 text-[#2fd9f4]" />
+            <span className="text-[#2fd9f4] text-sm tracking-widest font-bold uppercase">System_Initialization</span>
+          </div>
+          <div className="space-y-3">
+            {terminalLines.map((line, i) => (
+              <div key={i} className="flex gap-3 text-sm">
+                <span className="text-[#2fd9f4]/40">[{i.toString().padStart(2, '0')}]</span>
+                <span className={i === terminalLines.length - 1 ? "text-[#8aebff] animate-pulse" : "text-[#8aebff]/70"}>
+                  {line}
+                </span>
+              </div>
+            ))}
+            <div className="flex gap-3 text-sm">
+              <span className="text-[#2fd9f4]/40">[{terminalLines.length.toString().padStart(2, '0')}]</span>
+              <span className="w-2 h-4 bg-[#2fd9f4] animate-bounce"></span>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -97,24 +127,31 @@ export default function Assessment() {
 
   if (error && questions.length === 0) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center flex-col space-y-4 font-mono text-center px-4">
-        <p className="text-red-500 text-xl">ERROR_DETECTED: {error}</p>
-        <button onClick={() => window.location.reload()} className="px-6 py-3 bg-red-900/50 text-red-400 border border-red-500 rounded hover:bg-red-800 transition-colors">
-          REBOOT_SYSTEM
-        </button>
+      <div className="min-h-screen bg-[#0e1416] flex items-center justify-center p-6 font-mono">
+        <div className="w-full max-w-md bg-black/40 border border-red-500/20 p-8 rounded-lg text-center">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-red-500 text-xl font-bold mb-2 tracking-widest uppercase">Corruption_Detected</h2>
+          <p className="text-red-400/70 text-sm mb-8">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="w-full py-3 bg-red-900/20 text-red-500 border border-red-500/50 rounded hover:bg-red-900/40 transition-all font-bold tracking-widest uppercase text-xs"
+          >
+            Reboot_System
+          </button>
+        </div>
       </div>
     );
   }
 
-  if (questions.length === 0) {
-     return <div className="min-h-screen bg-black flex items-center justify-center text-cyan-400 font-mono">NO_DATA_FOUND.</div>;
-  }
-
   if (submitting) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center flex-col space-y-4 font-mono">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-400 mb-4 shadow-[0_0_15px_#06b6d4]"></div>
-        <p className="text-cyan-400 text-xl animate-pulse">COMPILING_RESULTS...</p>
+      <div className="min-h-screen bg-[#0e1416] flex items-center justify-center flex-col p-6 font-mono">
+        <div className="relative w-24 h-24 mb-8">
+          <div className="absolute inset-0 rounded-full border-4 border-[#2fd9f4]/10"></div>
+          <div className="absolute inset-0 rounded-full border-t-4 border-[#2fd9f4] animate-spin shadow-[0_0_15px_#2fd9f4]"></div>
+          <Shield className="absolute inset-0 m-auto w-10 h-10 text-[#2fd9f4] animate-pulse" />
+        </div>
+        <p className="text-[#2fd9f4] text-sm tracking-[0.3em] font-bold uppercase animate-pulse">Compiling_Results...</p>
       </div>
     );
   }
@@ -122,8 +159,7 @@ export default function Assessment() {
   const currentQ = questions[currentIndex];
   const isLikert = currentQ.item_type.toLowerCase().includes('likert');
   const isSjt = currentQ.item_type.toLowerCase().includes('sjt');
-  const isCognitive = currentQ.item_type.toLowerCase().includes('cognitive');
-
+  
   let parsedOptions: any = null;
   if (currentQ.options) {
       if (typeof currentQ.options === 'string') {
@@ -140,58 +176,77 @@ export default function Assessment() {
   const progressPercentage = ((currentIndex) / questions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center py-6 sm:py-12 px-4 sm:px-6 font-mono text-slate-300 selection:bg-cyan-500/30">
+    <div className="min-h-screen bg-[#0e1416] text-[#dde4e5] selection:bg-[#2fd9f4]/30 selection:text-white pb-12">
       
-      {/* Progress Bar Header */}
-      <div className="w-full max-w-3xl mb-8">
-        <div className="flex justify-between items-center mb-3 text-xs sm:text-sm text-cyan-500">
-          <span className="uppercase tracking-widest font-bold drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]">System_Check: {currentIndex + 1}/{questions.length}</span>
-          <span className="uppercase tracking-widest border border-cyan-800 bg-cyan-950/30 px-3 py-1 rounded shadow-inner">{currentQ.item_type}</span>
-        </div>
-        <div className="w-full bg-slate-900 rounded-full h-3 sm:h-4 border border-slate-800 relative overflow-hidden shadow-inner">
-          <div 
-            className="absolute top-0 left-0 h-full bg-cyan-500 shadow-[0_0_10px_#06b6d4,inset_0_0_5px_#fff] transition-all duration-500 ease-out rounded-full" 
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
+      {/* Immersive Header */}
+      <div className="w-full bg-black/40 border-b border-[#2fd9f4]/10 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex flex-col gap-4">
+          <div className="flex justify-between items-end font-mono">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] text-[#2fd9f4]/60 uppercase tracking-[0.2em] font-bold">Session_Identifier</span>
+              <span className="text-xs text-[#2fd9f4] font-bold tracking-widest">STU-{studentId.split('-').pop()?.toUpperCase()}</span>
+            </div>
+            <div className="text-right flex flex-col gap-1">
+              <span className="text-[10px] text-[#2fd9f4]/60 uppercase tracking-[0.2em] font-bold">Progress_Metrics</span>
+              <span className="text-xs text-[#2fd9f4] font-bold tracking-widest">{currentIndex + 1} / {questions.length}</span>
+            </div>
+          </div>
+          
+          {/* Segmented Progress Bar */}
+          <div className="relative h-2 w-full bg-black/40 border border-[#2fd9f4]/10 rounded-full overflow-hidden">
+            <div 
+              className="absolute top-0 left-0 h-full bg-[#2fd9f4] shadow-[0_0_15px_#2fd9f4] transition-all duration-700 ease-out" 
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+            {/* 10% Segments */}
+            <div className="absolute inset-0 flex justify-between px-[1px]">
+              {[...Array(11)].map((_, i) => (
+                <div key={i} className="h-full w-[1px] bg-[#0e1416]/50"></div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className={`w-full max-w-3xl flex-1 flex flex-col transition-all duration-300 transform ${isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'}`}>
-        
-        <div className="bg-slate-900 border border-slate-800 p-6 sm:p-10 md:p-12 rounded-2xl shadow-2xl shadow-black/50 relative overflow-hidden flex-1 flex flex-col">
-          {/* Decorative scanner line */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+      <main className="max-w-4xl mx-auto px-6 py-12 md:py-20">
+        <div className={`transition-all duration-500 transform ${isTransitioning ? 'opacity-0 -translate-y-4 scale-98' : 'opacity-100 translate-y-0 scale-100'}`}>
           
-          <h3 className="text-xl sm:text-2xl md:text-3xl font-medium text-white mb-10 leading-relaxed font-sans">
-            <span className="text-cyan-500 font-mono mr-3 text-2xl font-bold">{'>'}</span>
+          <div className="flex items-center gap-3 mb-8 font-mono">
+            <div className="px-3 py-1 bg-[#2fd9f4]/10 border border-[#2fd9f4]/30 rounded text-[10px] text-[#2fd9f4] font-bold uppercase tracking-widest shadow-inner">
+              {currentQ.item_type}
+            </div>
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-[#2fd9f4]/30 to-transparent"></div>
+          </div>
+
+          <h1 className="text-2xl md:text-4xl font-extrabold text-white mb-16 leading-tight font-sans">
+            <span className="text-[#2fd9f4] font-mono mr-4 opacity-50 select-none">Q.</span>
             {currentQ.text}
-          </h3>
+          </h1>
 
-          {error && <p className="text-red-400 mb-6 bg-red-950/30 p-4 rounded border border-red-900 shadow-inner">{error}</p>}
-
-          <div className="space-y-6 w-full mt-auto">
+          <div className="grid gap-6">
             {isLikert && (
-              <div className="flex flex-col space-y-6">
-                <div className="flex justify-between items-end px-2 sm:px-4 text-xs sm:text-sm text-slate-500 uppercase tracking-widest font-bold">
+              <div className="flex flex-col gap-8">
+                <div className="flex justify-between px-2 font-mono text-[10px] text-[#2fd9f4]/50 uppercase tracking-[0.3em] font-bold">
                   <span>Strongly Disagree</span>
                   <span>Strongly Agree</span>
                 </div>
-                <div className="flex justify-between gap-2 sm:gap-4">
+                <div className="flex flex-wrap md:flex-nowrap justify-between gap-4">
                   {[1, 2, 3, 4, 5].map((score) => (
                     <button
                       key={score}
                       onClick={() => handleResponse(score)}
-                      className="flex-1 py-8 sm:py-10 bg-slate-950 border border-slate-700 hover:border-cyan-400 hover:bg-cyan-950/40 hover:text-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] rounded-xl text-2xl sm:text-3xl font-black transition-all transform active:scale-95 text-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                      className="flex-1 min-w-[60px] h-20 md:h-32 bg-black/20 border border-[#2fd9f4]/10 rounded-xl flex items-center justify-center text-2xl md:text-4xl font-black font-mono text-[#2fd9f4]/40 hover:text-[#2fd9f4] hover:bg-[#2fd9f4]/10 hover:border-[#2fd9f4] hover:shadow-[0_0_30px_rgba(47,217,244,0.2)] transition-all transform active:scale-95 group relative overflow-hidden"
                     >
-                      {score}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#2fd9f4]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <span className="relative z-10">{score}</span>
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {(isSjt || isCognitive) && parsedOptions && Array.isArray(parsedOptions) && (
-              <div className="flex flex-col space-y-4">
+            {(isSjt || !isLikert) && parsedOptions && Array.isArray(parsedOptions) && (
+              <div className="grid gap-4">
                  {parsedOptions.map((opt: any, idx: number) => {
                     const val = opt.value || opt.id || String.fromCharCode(65 + idx);
                     const label = opt.label || opt.text || opt;
@@ -199,51 +254,41 @@ export default function Assessment() {
                       <button
                         key={idx}
                         onClick={() => handleResponse(val)}
-                        className="w-full text-left p-6 sm:p-8 rounded-xl border border-slate-700 bg-slate-950 hover:bg-cyan-950/20 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] transition-all transform active:scale-[0.98] text-slate-300 hover:text-cyan-50 group flex items-start focus:outline-none focus:border-cyan-500"
+                        className="w-full text-left p-6 md:p-8 rounded-xl border border-[#2fd9f4]/10 bg-black/20 hover:bg-[#2fd9f4]/5 hover:border-[#2fd9f4]/50 hover:shadow-[0_0_20px_rgba(47,217,244,0.1)] transition-all transform active:scale-[0.99] group flex items-start relative overflow-hidden"
                       >
-                         <span className="font-mono font-bold text-cyan-600 group-hover:text-cyan-400 mr-5 text-xl sm:text-2xl mt-[-2px]">[{val}]</span> 
-                         <span className="text-base sm:text-lg md:text-xl font-sans leading-relaxed">{label}</span>
+                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#2fd9f4] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                         <span className="font-mono font-black text-[#2fd9f4]/30 group-hover:text-[#2fd9f4] mr-6 text-xl md:text-2xl transition-colors">[{val}]</span> 
+                         <span className="text-lg md:text-xl font-sans font-medium text-[#dde4e5] group-hover:text-white transition-colors pt-0.5">{label}</span>
+                         <ChevronRight className="ml-auto w-6 h-6 text-[#2fd9f4]/20 group-hover:text-[#2fd9f4] transition-all transform group-hover:translate-x-1" />
                       </button>
                     );
                  })}
               </div>
             )}
 
-            {(isSjt || isCognitive) && (!parsedOptions || !Array.isArray(parsedOptions)) && (
-              <div className="flex flex-col space-y-4">
-                {['A', 'B', 'C', 'D'].map((val) => (
-                  <button
-                    key={val}
-                    onClick={() => handleResponse(val)}
-                    className="w-full p-6 sm:p-8 rounded-xl border border-slate-700 bg-slate-950 hover:bg-cyan-950/20 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] transition-all transform active:scale-[0.98] text-center font-bold text-slate-400 hover:text-cyan-400 text-xl focus:outline-none focus:border-cyan-500"
-                  >
-                    Select Option {val}
-                  </button>
-                ))}
-              </div>
-            )}
-            
-            {!isLikert && !isSjt && !isCognitive && (
-               <div className="flex flex-col space-y-4">
+            {!isLikert && (!parsedOptions || !Array.isArray(parsedOptions)) && (
+               <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-[#2fd9f4]/20 to-[#3626ce]/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-1000"></div>
                   <input 
                     type="text" 
-                    placeholder="ENTER_RESPONSE_"
-                    className="w-full p-6 bg-slate-950 border border-slate-700 rounded-xl text-cyan-400 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.3)] text-lg sm:text-xl transition-all font-mono"
+                    autoFocus
+                    placeholder="WAITING_FOR_INPUT_"
+                    className="relative w-full p-8 bg-black/40 border border-[#2fd9f4]/20 rounded-xl text-[#2fd9f4] placeholder-[#2fd9f4]/20 focus:outline-none focus:border-[#2fd9f4] focus:ring-0 text-xl md:text-2xl transition-all font-mono tracking-wider"
                     onKeyDown={(e) => {
                        if (e.key === 'Enter' && e.currentTarget.value) {
                            handleResponse(e.currentTarget.value);
                        }
                     }}
                   />
-                  <p className="text-sm text-slate-500 flex items-center mt-2">
-                    <kbd className="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded mr-3 text-xs font-bold text-slate-300 shadow-inner">ENTER</kbd> 
-                    to submit response
-                  </p>
+                  <div className="mt-4 flex items-center justify-between font-mono text-[10px] text-[#2fd9f4]/40 uppercase tracking-widest px-2">
+                    <span>Press [ENTER] to confirm</span>
+                    <span className="animate-pulse">_Cursor_Active</span>
+                  </div>
                </div>
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

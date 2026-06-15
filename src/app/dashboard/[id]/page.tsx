@@ -1,9 +1,24 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { Trophy, Star, TrendingUp, User, Layout, ExternalLink, AlertCircle, Loader2, Share2, Download, MessageCircle, Linkedin } from "lucide-react";
+import { 
+  Trophy, 
+  TrendingUp, 
+  User, 
+  ExternalLink, 
+  AlertCircle, 
+  Loader2, 
+  Share2, 
+  Download, 
+  ChevronRight,
+  Shield,
+  Zap,
+  Target,
+  Brain,
+  Layers
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export default function Dashboard() {
   const { id } = useParams();
@@ -11,6 +26,7 @@ export default function Dashboard() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('intelligence');
 
   useEffect(() => {
     async function fetchData() {
@@ -22,19 +38,20 @@ export default function Dashboard() {
         const json = await res.json();
         setData(json);
       } catch (err: any) {
-        // Fallback to mock data if API fails so the UI still works
         console.error(err);
+        // Fallback for demo purposes
         setData({
-          student: { full_name: "Jane Doe", department: "Engineering" },
+          student: { full_name: "CYBER_NOMAD", department: "NEURAL_ENGINEERING" },
           assessments: [{
-            dimension_scores: { IQ: 85, EQ: 92, SQ: 78, AQ: 88, SpQ: 70 },
-            primary_profile: "The Visionary Architect",
-            founder_fit: { Builder: 94 },
+            dimension_scores: { IQ: 88, EQ: 94, SQ: 72, AQ: 91, SpQ: 76 },
+            primary_profile: "THE_ARCHITECT",
+            founder_fit: { Builder: 96 },
             development_report: {
-              profile_summary: "Highly adaptive with exceptional emotional intelligence. You thrive in chaotic environments where strategic empathy is required to align stakeholders.",
+              profile_summary: "EXCEPTIONAL_ADAPTIVE_CAPACITY. ANALYTICAL_RIGOR_MATCHED_BY_STRATEGIC_EMPATHY. IDEAL_FOR_HIGH_STAKES_ORCHESTRATION.",
               actionable_feedback: [
-                "Consider supplemental courses or study groups to strengthen core problem-solving (IQ) skills.",
-                "Your EQ is excellent. You might make a great peer mentor or team mediator."
+                "OPTIMIZE_NEURAL_EFFICIENCY_IN_COGNITIVE_BLINDSPOTS.",
+                "LEVERAGE_HIGH_EQ_FOR_STAKEHOLDER_SYNCHRONIZATION.",
+                "INTENSIFY_STRESS_TESTING_IN_NON_LINEAR_ENVIRONMENTS."
               ]
             }
           }]
@@ -46,237 +63,199 @@ export default function Dashboard() {
     fetchData();
   }, [id]);
 
-  const handleShare = (platform: string) => {
-    alert(`Mock sharing to ${platform}! This would open a share dialog.`);
-  };
-
-  const handleDownload = () => {
-    window.print();
-  };
-
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-slate-950 text-cyan-500 font-mono">
-        <div className="flex flex-col items-center">
-          <Loader2 className="h-12 w-12 animate-spin mb-4 drop-shadow-[0_0_10px_#06b6d4]" />
-          <div className="animate-pulse">DECRYPTING_PROFILE_DATA...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !data) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-slate-950 text-red-500 font-mono flex-col">
-        <AlertCircle className="mb-4 h-12 w-12 animate-pulse" />
-        <span className="text-xl">CORRUPTION_DETECTED: {error}</span>
-      </div>
-    );
-  }
-
-  const student = data?.student || {};
   const assessment = data?.assessments?.[0] || {};
   const scores = assessment.dimension_scores || { IQ: 85, EQ: 92, SQ: 78, AQ: 88, SpQ: 70 };
   const report = assessment.development_report || {};
-  
-  // calculate fit score
-  const maxFit = assessment.founder_fit ? Math.max(...Object.values(assessment.founder_fit as Record<string, number>)) : 94;
-  
-  const profile = {
-    name: student.full_name || "Jane Doe",
-    type: assessment.primary_profile || "The Visionary Architect",
-    description: report.profile_summary || "Highly adaptive with exceptional emotional intelligence.",
-    fitScore: maxFit > 100 ? 100 : maxFit,
-  };
+  const maxFitValue = assessment.founder_fit ? Math.max(...Object.values(assessment.founder_fit as Record<string, number>)) : 96;
+  const founderFitType = assessment.founder_fit ? Object.keys(assessment.founder_fit)[0].toUpperCase() : "THE_BUILDER";
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-300 font-sans selection:bg-cyan-500/30 selection:text-cyan-100 pb-20">
-      
-      {/* Top Banner / Header */}
-      <div className="bg-slate-900/80 border-b border-slate-800 sticky top-0 z-50 shadow-lg shadow-black/50 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded bg-cyan-500 flex items-center justify-center text-slate-900 font-black font-mono shadow-[0_0_10px_rgba(6,182,212,0.5)]">C2C</div>
-             <span className="font-mono text-cyan-400 font-bold hidden sm:inline-block tracking-widest text-sm">TALENT_MATRIX</span>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0e1416] flex items-center justify-center font-mono">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative">
+            <Loader2 className="h-16 w-16 animate-spin text-[#2fd9f4] opacity-20" />
+            <Loader2 className="absolute inset-0 h-16 w-16 animate-spin text-[#2fd9f4] [animation-delay:150ms]" />
           </div>
-          <div className="flex gap-2 sm:gap-3">
-             <button onClick={() => handleShare('WhatsApp')} className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border border-[#25D366]/30 rounded-lg text-sm font-semibold transition-all shadow-inner">
-                <MessageCircle className="w-4 h-4" /> <span className="hidden sm:inline">WhatsApp</span>
-             </button>
-             <button onClick={() => handleShare('LinkedIn')} className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-[#0077b5]/10 text-[#0077b5] hover:bg-[#0077b5]/20 border border-[#0077b5]/30 rounded-lg text-sm font-semibold transition-all shadow-inner">
-                <Linkedin className="w-4 h-4" /> <span className="hidden sm:inline">LinkedIn</span>
-             </button>
-             <button onClick={handleDownload} className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-800 text-white hover:bg-slate-700 border border-slate-600 rounded-lg text-sm font-semibold transition-all shadow-inner">
-                <Download className="w-4 h-4" /> <span className="hidden sm:inline">Export</span>
-             </button>
-          </div>
+          <div className="text-[#2fd9f4] tracking-[0.4em] font-bold animate-pulse text-sm">SYNCHRONIZING_MATRIX...</div>
         </div>
       </div>
+    );
+  }
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 mt-2">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
-          
-          {/* Left Column: Profile & Founder Fit */}
-          <div className="lg:col-span-4 space-y-6 sm:space-y-8">
-            
-            {/* Main Profile Card */}
-            <div className="rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden shadow-2xl relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              <div className="p-6 sm:p-8 pb-0 flex flex-col items-center text-center">
-                <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-slate-800 border-2 border-cyan-500 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.4)] mb-4">
-                  <User className="h-10 w-10 sm:h-12 sm:w-12 text-cyan-400" />
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 font-mono tracking-tight">{profile.name}</h1>
-                <div className="inline-block px-4 py-1.5 bg-cyan-950 text-cyan-400 rounded-full text-xs font-bold uppercase tracking-widest border border-cyan-800/50 mb-6 shadow-inner">
-                  {profile.type}
-                </div>
+  return (
+    <div className="min-h-screen bg-[#0e1416] text-[#dde4e5] selection:bg-[#2fd9f4]/30 selection:text-white pb-24">
+      
+      {/* Top Action Bar */}
+      <nav className="sticky top-0 z-[100] bg-[#0e1416]/80 backdrop-blur-xl border-b border-[#2fd9f4]/10">
+        <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-[#3626ce] rounded flex items-center justify-center shadow-[0_0_20px_rgba(54,38,206,0.4)]">
+                <Zap className="w-5 h-5 text-white" />
               </div>
-
-              {/* Founder Fit Prominent Section */}
-              <div className="bg-slate-950 p-6 sm:p-8 border-t border-slate-800 mt-2 relative overflow-hidden">
-                {/* Decorative background grid */}
-                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
-                
-                <div className="flex flex-col items-center relative z-10">
-                  <span className="text-xs sm:text-sm font-semibold text-slate-500 uppercase tracking-[0.2em] mb-2 font-mono">Founder_Fit_Index</span>
-                  <div className="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-500 drop-shadow-[0_0_15px_rgba(6,182,212,0.4)] tracking-tighter">
-                    {profile.fitScore}%
-                  </div>
-                  <div className="w-full mt-6 bg-slate-800 rounded-full h-2.5 sm:h-3 overflow-hidden shadow-inner p-[1px] border border-slate-700">
-                    <div 
-                      className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 relative rounded-full" 
-                      style={{ width: `${profile.fitScore}%` }}
-                    >
-                      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4zKSIvPjwvc3ZnPg==')] opacity-50"></div>
-                      <div className="absolute top-0 right-0 w-8 h-full bg-gradient-to-r from-transparent to-white/30"></div>
-                    </div>
-                  </div>
-                  <div className="mt-6 p-4 bg-slate-900 border border-slate-800 rounded-xl relative">
-                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/4 bg-cyan-500 rounded-r"></div>
-                     <p className="text-center text-sm text-slate-400 leading-relaxed italic pl-2">
-                       "{profile.description}"
-                     </p>
-                  </div>
-                </div>
-              </div>
+              <span className="font-mono font-black tracking-tighter text-xl">C2C<span className="text-[#2fd9f4]">.OS</span></span>
             </div>
-
-            {/* Professional Legend Ad */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 opacity-100 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-              <div className="relative z-10">
-                <div className="mx-auto h-12 w-12 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 mb-4 shadow-[0_0_15px_rgba(234,179,8,0.15)] group-hover:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-shadow">
-                   <Trophy className="h-6 w-6 text-yellow-500" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white font-mono uppercase tracking-wider">Professional Legend</h3>
-                <p className="mt-2 text-xs sm:text-sm text-slate-400">Unlock your verified corporate profile mapped in our legacy 1995 protocol interface.</p>
-                <Link
-                  href="/index.html"
-                  className="mt-6 inline-flex items-center justify-center w-full sm:w-auto gap-2 rounded-lg bg-slate-800 border border-slate-700 px-6 py-3 text-sm font-bold text-slate-300 transition-all hover:bg-slate-700 hover:text-white hover:border-slate-500"
-                >
-                  <ExternalLink className="h-4 w-4" /> ACCESS_LEGEND
-                </Link>
-              </div>
+            <div className="hidden md:flex h-8 w-[1px] bg-[#2fd9f4]/10"></div>
+            <div className="hidden md:flex items-center gap-4 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[#2fd9f4]/60">
+              <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> SECURE_LAYER_01</span>
+              <span className="w-1 h-1 bg-[#2fd9f4]/30 rounded-full"></span>
+              <span className="flex items-center gap-1.5"><Target className="w-3 h-3" /> LIVE_METRICS</span>
             </div>
-
           </div>
 
-          {/* Right Column: Analytics & Report */}
-          <div className="lg:col-span-8 space-y-6 sm:space-y-8">
-            
-            {/* Psychometric Matrix */}
-            <div className="rounded-2xl bg-slate-900 border border-slate-800 p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-              <div className="absolute -top-10 -right-10 opacity-5 pointer-events-none">
-                <TrendingUp className="w-64 h-64" />
+          <div className="flex items-center gap-3">
+            <button className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#2fd9f4]/5 hover:bg-[#2fd9f4]/10 border border-[#2fd9f4]/20 rounded font-mono text-[10px] font-bold uppercase tracking-widest text-[#2fd9f4] transition-all">
+              <Share2 className="w-3.5 h-3.5" /> Share
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 bg-[#3626ce]/10 hover:bg-[#3626ce]/20 border border-[#3626ce]/30 rounded font-mono text-[10px] font-bold uppercase tracking-widest text-[#c3c0ff] transition-all">
+              <Download className="w-3.5 h-3.5" /> Export
+            </button>
+            <div className="w-8 h-8 rounded bg-gradient-to-br from-[#2fd9f4] to-[#3626ce] p-[1px]">
+              <div className="w-full h-full rounded bg-[#0e1416] flex items-center justify-center">
+                <User className="w-4 h-4 text-[#2fd9f4]" />
               </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-[1400px] mx-auto px-6 pt-12">
+        
+        {/* Founder Fit Hero Section */}
+        <section className="mb-12 relative">
+          <div className="absolute -top-20 -left-20 w-96 h-96 bg-[#2fd9f4]/5 rounded-full blur-[100px] pointer-events-none"></div>
+          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-[#3626ce]/5 rounded-full blur-[100px] pointer-events-none"></div>
+          
+          <div className="relative bg-black/40 border border-[#2fd9f4]/10 rounded-3xl p-8 md:p-16 overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+               <Layers className="w-64 h-64 text-[#2fd9f4]" />
+            </div>
+            
+            <div className="flex flex-col md:flex-row items-center gap-12 relative z-10">
+              <div className="flex-1 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#2fd9f4]/10 border border-[#2fd9f4]/20 rounded font-mono text-[10px] font-bold text-[#2fd9f4] uppercase tracking-[0.3em] mb-6">
+                  <Zap className="w-3 h-3" /> Cognitive_Archetype_Detected
+                </div>
+                <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-4 leading-none">
+                  <span className="block text-white opacity-40 text-2xl md:text-4xl font-mono mb-2 uppercase tracking-widest">THE_LEGEND:</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2fd9f4] via-[#8aebff] to-[#3626ce] drop-shadow-[0_0_30px_rgba(47,217,244,0.3)]">
+                    {founderFitType}
+                  </span>
+                </h1>
+                <p className="max-w-xl text-lg md:text-xl text-[#bbc9cd] font-medium leading-relaxed font-sans mt-8">
+                  {report.profile_summary}
+                </p>
+              </div>
+
+              <div className="shrink-0 relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#2fd9f4] to-[#3626ce] rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full border border-[#2fd9f4]/20 bg-black/40 flex items-center justify-center p-8">
+                  <div className="text-center">
+                    <span className="block font-mono text-[10px] text-[#2fd9f4]/60 uppercase tracking-[0.2em] mb-1 font-bold">Fit_Index</span>
+                    <span className="block text-6xl md:text-8xl font-black text-white tracking-tighter">
+                      {maxFitValue}<span className="text-2xl md:text-3xl text-[#2fd9f4]">%</span>
+                    </span>
+                  </div>
+                  {/* Rotating decorative rings */}
+                  <div className="absolute inset-0 border-2 border-dashed border-[#2fd9f4]/10 rounded-full animate-[spin_20s_linear_infinite]"></div>
+                  <div className="absolute inset-4 border border-[#3626ce]/20 rounded-full animate-[spin_15s_linear_infinite_reverse]"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Intelligence Matrix - Radar Chart */}
+          <div className="lg:col-span-7">
+            <div className="bg-black/20 border border-[#2fd9f4]/10 rounded-3xl p-8 h-full relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#2fd9f4]/40 to-transparent"></div>
               
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 border-b border-slate-800 pb-4 relative z-10">
+              <div className="flex justify-between items-start mb-12">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white font-mono uppercase tracking-widest flex items-center">
-                    <span className="text-cyan-500 mr-2 text-3xl leading-none -mt-2">.</span>Intelligence Matrix
+                  <h2 className="text-2xl font-black text-white font-mono uppercase tracking-widest flex items-center gap-3">
+                    <Brain className="w-6 h-6 text-[#2fd9f4]" /> Intelligence_Matrix
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1 uppercase tracking-wider font-semibold">Multi-dimensional cognitive analysis</p>
+                  <p className="text-[10px] text-[#2fd9f4]/50 uppercase tracking-[0.3em] font-bold mt-2">Neural_Capacity_Benchmarks</p>
+                </div>
+                <div className="px-3 py-1 bg-black/40 border border-[#2fd9f4]/10 rounded font-mono text-[10px] text-[#2fd9f4]/40 uppercase tracking-widest">
+                  Live_Data_Feed
                 </div>
               </div>
 
-              <div className="flex flex-col xl:flex-row items-center justify-center gap-8 sm:gap-12 relative z-10">
-                {/* Radar Chart Container */}
-                <div className="relative h-[280px] w-[280px] sm:h-[320px] sm:w-[320px] shrink-0 bg-slate-950 rounded-full flex items-center justify-center border border-slate-800/80 shadow-inner">
-                  <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.05)_0%,transparent_70%)]"></div>
-                  <div className="relative z-10 w-full h-full p-4 sm:p-6">
-                     <RadarChart scores={scores} />
-                  </div>
+              <div className="flex flex-col xl:flex-row items-center gap-12">
+                <div className="w-full max-w-[400px] aspect-square relative">
+                  <RadarChart scores={scores} />
                 </div>
                 
-                {/* Score Bars */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
+                <div className="flex-1 grid grid-cols-1 gap-4 w-full">
                   {Object.entries(scores).map(([key, value]) => (
-                    <div key={key} className="rounded-xl bg-slate-950 border border-slate-800/80 p-4 sm:p-5 group hover:border-cyan-500/30 transition-colors shadow-inner">
+                    <div key={key} className="bg-black/40 border border-[#2fd9f4]/5 p-5 rounded-2xl hover:border-[#2fd9f4]/30 transition-all group">
                       <div className="flex justify-between items-end mb-3">
-                        <span className="text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-[0.2em] font-mono group-hover:text-cyan-300 transition-colors">{key}</span>
-                        <span className="text-2xl sm:text-3xl font-black text-white">{value as React.ReactNode}</span>
+                        <span className="font-mono text-[10px] font-bold text-[#2fd9f4]/60 uppercase tracking-[0.2em] group-hover:text-[#2fd9f4] transition-colors">{key}</span>
+                        <span className="text-2xl font-black text-white">{value as number}</span>
                       </div>
-                      <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                      <div className="h-1.5 w-full bg-black/60 rounded-full overflow-hidden p-[1px]">
                         <div 
-                          className="h-full bg-cyan-500 shadow-[0_0_8px_#06b6d4] relative" 
-                          style={{ width: `${value}%` }} 
-                        >
-                           <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/40"></div>
-                        </div>
+                          className="h-full bg-gradient-to-r from-[#2fd9f4] to-[#3626ce] rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(47,217,244,0.5)]" 
+                          style={{ width: `${value}%` }}
+                        ></div>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-
-            {/* Personal Development Report */}
-            {report.actionable_feedback && report.actionable_feedback.length > 0 && (
-              <div className="rounded-2xl bg-slate-900 border border-slate-800 p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-cyan-500 to-blue-600"></div>
-                
-                <div className="border-b border-slate-800 pb-4 mb-8">
-                   <h2 className="text-xl sm:text-2xl font-bold text-white font-mono uppercase tracking-widest mb-1 flex items-center">
-                      <span className="text-cyan-500 mr-2 text-3xl leading-none -mt-2">.</span>Dev_Report
-                   </h2>
-                   <p className="text-xs sm:text-sm text-slate-500 uppercase tracking-wider font-semibold">Actionable insights from psychometric profile</p>
-                </div>
-                
-                <div className="space-y-8">
-                  {/* Summary Callout */}
-                  <div className="relative p-5 sm:p-6 rounded-xl bg-slate-950 border border-slate-800 shadow-inner">
-                    <div className="absolute -top-2.5 left-6 px-3 bg-slate-900 text-cyan-400 text-[10px] sm:text-xs font-bold font-mono tracking-[0.2em] border border-slate-700 rounded shadow-md">
-                      EXECUTIVE_SUMMARY
-                    </div>
-                    <p className="text-slate-300 leading-relaxed pt-2 text-sm sm:text-base">
-                      {report.profile_summary}
-                    </p>
-                  </div>
-                  
-                  {/* Actionable Feedback List */}
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-semibold text-slate-500 font-mono tracking-[0.2em] uppercase mb-4 pl-1">Targeted_Directives</h4>
-                    <div className="grid gap-3 sm:gap-4">
-                      {report.actionable_feedback.map((feedback: string, idx: number) => (
-                        <div key={idx} className="flex items-start p-4 sm:p-5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors shadow-inner group">
-                          <div className="flex-shrink-0 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded bg-slate-900 text-cyan-500 font-mono text-xs sm:text-sm font-bold mr-4 border border-slate-700 group-hover:border-cyan-500/50 group-hover:text-cyan-400 transition-colors">
-                            0{idx + 1}
-                          </div>
-                          <p className="text-slate-400 leading-relaxed text-sm sm:text-base pt-1 sm:pt-1.5 group-hover:text-slate-300 transition-colors">
-                            {feedback}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
           </div>
+
+          {/* Development Report - Targeted Directives */}
+          <div className="lg:col-span-5">
+            <div className="bg-black/20 border border-[#2fd9f4]/10 rounded-3xl p-8 h-full relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#2fd9f4] to-transparent"></div>
+              
+              <div className="mb-10">
+                <h2 className="text-2xl font-black text-white font-mono uppercase tracking-widest flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-[#2fd9f4]" /> Targeted_Directives
+                </h2>
+                <p className="text-[10px] text-[#2fd9f4]/50 uppercase tracking-[0.3em] font-bold mt-2">Optimization_Protocols_v2.0</p>
+              </div>
+
+              <div className="space-y-4">
+                {report.actionable_feedback.map((directive: string, i: number) => (
+                  <div key={i} className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#2fd9f4]/20 to-[#3626ce]/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <div className="relative bg-black/60 border border-[#2fd9f4]/10 p-6 rounded-2xl flex items-start gap-6 backdrop-blur-sm transition-all group-hover:bg-black/40 group-hover:translate-x-1">
+                      <div className="shrink-0 w-10 h-10 rounded bg-[#2fd9f4]/5 border border-[#2fd9f4]/20 flex items-center justify-center font-mono text-[#2fd9f4] font-bold">
+                        {String(i + 1).padStart(2, '0')}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[#dde4e5] font-sans leading-relaxed text-sm md:text-base group-hover:text-white transition-colors">
+                          {directive}
+                        </p>
+                      </div>
+                      <ChevronRight className="shrink-0 w-5 h-5 text-[#2fd9f4]/20 group-hover:text-[#2fd9f4] transition-colors self-center" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-12 p-6 bg-[#3626ce]/5 border border-[#3626ce]/20 rounded-2xl text-center">
+                 <h4 className="text-white font-mono font-bold uppercase tracking-widest text-xs mb-3">Professional_Legend_Protocol</h4>
+                 <p className="text-[10px] text-[#c3c0ff]/60 uppercase tracking-widest mb-6 leading-relaxed">Unlock advanced career mapping via legacy interface</p>
+                 <Link 
+                   href="/index.html" 
+                   className="inline-flex items-center gap-2 px-6 py-3 bg-[#3626ce] hover:bg-[#3626ce]/80 text-white rounded font-mono text-[10px] font-bold uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(54,38,206,0.3)] hover:shadow-[0_0_30px_rgba(54,38,206,0.5)]"
+                 >
+                   Access_Legacy_System <ExternalLink className="w-3.5 h-3.5" />
+                 </Link>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -285,48 +264,55 @@ function RadarChart({ scores }: { scores: Record<string, number> }) {
   const size = 100;
   const centerX = size / 2;
   const centerY = size / 2;
-  const radius = (size / 2) * 0.70;
+  const radius = (size / 2) * 0.75;
   const categories = Object.keys(scores);
   const data = Object.values(scores);
 
-  // Generate points for the radar polygon
-  const points = data.map((value, i) => {
+  const points = useMemo(() => data.map((value, i) => {
     const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
     const r = (value / 100) * radius;
     return {
       x: centerX + r * Math.cos(angle),
       y: centerY + r * Math.sin(angle),
     };
-  });
+  }), [data, categories.length, radius]);
 
   const pointsStr = points.map((p) => `${p.x},${p.y}`).join(" ");
 
-  // Generate grid lines
   const gridLines = [20, 40, 60, 80, 100].map((level) => {
     const r = (level / 100) * radius;
-    const gridPoints = categories.map((_, i) => {
+    return categories.map((_, i) => {
       const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
       return `${centerX + r * Math.cos(angle)},${centerY + r * Math.sin(angle)}`;
     }).join(" ");
-    return gridPoints;
   });
 
   return (
-    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible drop-shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-      {/* Grid */}
-      {gridLines.map((points, i) => (
+    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+      <defs>
+        <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="1.5" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+        <linearGradient id="poly-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#2fd9f4" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#3626ce" stopOpacity="0.1" />
+        </linearGradient>
+      </defs>
+
+      {/* Grid Lines */}
+      {gridLines.map((pts, i) => (
         <polygon
           key={i}
-          points={points}
+          points={pts}
           fill="none"
-          stroke="currentColor"
-          className="text-slate-800"
-          strokeWidth="0.5"
-          strokeDasharray={i === gridLines.length - 1 ? "none" : "1,2"}
+          stroke="rgba(47, 217, 244, 0.1)"
+          strokeWidth="0.3"
+          className={i === gridLines.length - 1 ? "stroke-[#2fd9f4]/20" : ""}
         />
       ))}
       
-      {/* Axes */}
+      {/* Axis Lines */}
       {categories.map((_, i) => {
         const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
         return (
@@ -336,17 +322,16 @@ function RadarChart({ scores }: { scores: Record<string, number> }) {
             y1={centerY}
             x2={centerX + radius * Math.cos(angle)}
             y2={centerY + radius * Math.sin(angle)}
-            stroke="currentColor"
-            className="text-slate-700"
-            strokeWidth="0.5"
+            stroke="rgba(47, 217, 244, 0.05)"
+            strokeWidth="0.3"
           />
         );
       })}
       
-      {/* Labels */}
+      {/* Category Labels */}
       {categories.map((cat, i) => {
         const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-        const x = centerX + (radius + 15) * Math.cos(angle);
+        const x = centerX + (radius + 14) * Math.cos(angle);
         const y = centerY + (radius + 8) * Math.sin(angle);
         return (
           <text
@@ -355,42 +340,44 @@ function RadarChart({ scores }: { scores: Record<string, number> }) {
             y={y}
             textAnchor="middle"
             dominantBaseline="middle"
-            className="text-[4.5px] font-bold fill-slate-400 font-mono tracking-widest"
+            className="text-[4px] font-bold fill-[#2fd9f4]/40 font-mono tracking-widest uppercase"
           >
             {cat}
           </text>
         );
       })}
       
-      {/* Data Polygon Base */}
+      {/* Data Polygon */}
       <polygon
         points={pointsStr}
-        fill="rgba(6, 182, 212, 0.2)"
-        stroke="none"
-      />
-      
-      {/* Data Polygon Outline (glow effect) */}
-      <polygon
-        points={pointsStr}
-        fill="none"
-        stroke="#06b6d4"
-        strokeWidth="1.5"
+        fill="url(#poly-grad)"
+        stroke="#2fd9f4"
+        strokeWidth="1"
         strokeLinejoin="round"
-        className="drop-shadow-[0_0_3px_#06b6d4]"
+        filter="url(#neon-glow)"
+        className="animate-[pulse_4s_easeInOut_infinite] transition-all duration-1000"
       />
       
       {/* Data Points */}
       {points.map((p, i) => (
-        <circle 
-          key={i} 
-          cx={p.x} 
-          cy={p.y} 
-          r="1.8" 
-          fill="#0f172a" 
-          stroke="#06b6d4" 
-          strokeWidth="0.8"
-          className="drop-shadow-[0_0_3px_#06b6d4]" 
-        />
+        <g key={i} className="group cursor-help">
+          <circle 
+            cx={p.x} 
+            cy={p.y} 
+            r="1.5" 
+            fill="#0e1416" 
+            stroke="#2fd9f4" 
+            strokeWidth="0.5"
+            className="group-hover:r-2 transition-all"
+          />
+          <circle 
+            cx={p.x} 
+            cy={p.y} 
+            r="3" 
+            fill="#2fd9f4" 
+            className="opacity-0 group-hover:opacity-20 transition-all"
+          />
+        </g>
       ))}
     </svg>
   );

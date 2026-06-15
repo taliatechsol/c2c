@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
+const hanken = Hanken_Grotesk({ 
+  subsets: ["latin"],
+  variable: '--font-hanken',
+});
+
+const jetbrains = JetBrains_Mono({ 
+  subsets: ["latin"],
+  variable: '--font-jetbrains',
+});
 
 export const metadata: Metadata = {
   title: "c2c | Campus to Corporate",
@@ -18,12 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </div>
+      <body className={`${hanken.variable} ${jetbrains.variable} font-sans flex min-h-screen flex-col bg-[#0e1416] text-[#dde4e5]`}>
+        <Navbar />
+        <main className="flex-grow">{children}</main>
+        <Footer />
       </body>
     </html>
   );
