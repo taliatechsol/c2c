@@ -87,7 +87,8 @@ const MOCK_CANDIDATES = [
 ];
 
 export default function EmployerPage() {
-  const [candidates, setCandidates] = useState(MOCK_CANDIDATES);
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [panelVisible, setPanelVisible] = useState(false);
   const [strictFounderFit, setStrictFounderFit] = useState(false);
@@ -95,21 +96,46 @@ export default function EmployerPage() {
   const [minEQ, setMinEQ] = useState(75);
 
   useEffect(() => {
-    // Optionally fetch leads from API
-    const fetchLeads = async () => {
+    const fetchCandidates = async () => {
+      setIsLoading(true);
       try {
-        const res = await fetch("/api/leads");
+        const res = await fetch("/api/employer/candidates");
         if (res.ok) {
           const data = await res.json();
-          // If data has actual candidates, we could merge or replace
-          console.log("Fetched leads:", data);
+          const mappedData = data.map((item: any, idx: number) => ({
+            id: item.id || `mock-${idx}`,
+            name: item.name || "Unknown Candidate",
+            role: item.primary_profile || "Software Engineer",
+            cohort: "Cohort 2024.1",
+            match: Math.round(item.tech_fit_index || 0),
+            iq: item.dimension_scores?.IQ || 0,
+            eq: item.dimension_scores?.EQ || 0,
+            aq: item.dimension_scores?.AQ || 0,
+            sq: item.dimension_scores?.SQ || 0,
+            tech_fit_index: item.tech_fit_index || 0,
+            sales_fit_index: item.sales_fit_index || 0,
+            skills: ["Problem Solving", "Adaptability", "Teamwork"],
+            image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${item.id}`,
+            status: idx % 2 === 0 ? "online" : "away",
+            summary: `A candidate matching the ${item.primary_profile} profile with strong foundational skills.`
+          }));
+          setCandidates(mappedData);
         }
       } catch (err) {
-        console.error("Failed to fetch leads:", err);
+        console.error("Failed to fetch candidates:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchLeads();
+    fetchCandidates();
   }, []);
+
+  const filteredCandidates = candidates.filter(c => {
+    if (c.aq < minAQ) return false;
+    if (c.eq < minEQ) return false;
+    if (strictFounderFit && c.tech_fit_index < 80 && c.sales_fit_index < 80) return false;
+    return true;
+  });
 
   const togglePanel = (candidate?: any) => {
     if (candidate) {
@@ -230,7 +256,7 @@ export default function EmployerPage() {
                   <Users className="text-[#8aebff] w-6 h-6" />
                   <h1 className="text-3xl font-extrabold text-[#dde4e5] tracking-tight leading-none">Talent Pool</h1>
                 </div>
-                <p className={`text-[#bbc9cd] text-sm tracking-[0.05em] font-medium ${mono.className}`}>Displaying {candidates.length} elite matches for "Senior Systems Architect" • Cohort 2024.1</p>
+                <p className={`text-[#bbc9cd] text-sm tracking-[0.05em] font-medium ${mono.className}`}>Displaying {filteredCandidates.length} elite matches for "Senior Systems Architect" • Cohort 2024.1</p>
               </div>
               <div className="flex gap-2">
                 <div className="flex items-center bg-[#1a2122] rounded-lg p-1 border border-white/10">
@@ -250,7 +276,7 @@ export default function EmployerPage() {
 
             {/* Candidate Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-12">
-              {candidates.map((candidate) => (
+              {filteredCandidates.map((candidate) => (
                 <div 
                   key={candidate.id} 
                   className="bg-[#0f172a]/40 backdrop-blur-md rounded-xl overflow-hidden flex flex-col group border border-white/5 hover:border-[#8aebff]/40 transition-all duration-300 hover:shadow-[0_0_20px_rgba(47,217,244,0.1)]"
@@ -289,20 +315,20 @@ export default function EmployerPage() {
                       </div>
                       <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2">
                         <div className="flex flex-col">
-                          <span className={`text-[9px] text-[#bbc9cd] font-bold tracking-[0.1em] ${mono.className}`}>IQ</span>
-                          <span className="text-xs font-bold text-[#dde4e5]">{candidate.iq}</span>
+                          <span className={`text-[9px] text-[#bbc9cd] font-bold tracking-[0.1em] ${mono.className}`}>TFI (TECH FIT)</span>
+                          <span className="text-xs font-bold text-[#dde4e5]">{candidate.tech_fit_index?.toFixed(1)}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className={`text-[9px] text-[#bbc9cd] font-bold tracking-[0.1em] ${mono.className}`}>EQ</span>
-                          <span className="text-xs font-bold text-[#dde4e5]">{candidate.eq}</span>
+                          <span className={`text-[9px] text-[#bbc9cd] font-bold tracking-[0.1em] ${mono.className}`}>SFI (SALES FIT)</span>
+                          <span className="text-xs font-bold text-[#dde4e5]">{candidate.sales_fit_index?.toFixed(1)}</span>
                         </div>
                         <div className="flex flex-col">
                           <span className={`text-[9px] text-[#bbc9cd] font-bold tracking-[0.1em] ${mono.className}`}>AQ</span>
                           <span className="text-xs font-bold text-[#dde4e5]">{candidate.aq}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className={`text-[9px] text-[#bbc9cd] font-bold tracking-[0.1em] ${mono.className}`}>SQ</span>
-                          <span className="text-xs font-bold text-[#dde4e5]">{candidate.sq}</span>
+                          <span className={`text-[9px] text-[#bbc9cd] font-bold tracking-[0.1em] ${mono.className}`}>EQ</span>
+                          <span className="text-xs font-bold text-[#dde4e5]">{candidate.eq}</span>
                         </div>
                       </div>
                     </div>
@@ -310,7 +336,7 @@ export default function EmployerPage() {
                     <div className="space-y-2">
                       <span className={`text-[10px] font-bold tracking-[0.1em] text-[#bbc9cd] ${mono.className}`}>TOP SKILLS</span>
                       <div className="flex flex-wrap gap-1">
-                        {candidate.skills.map((skill, idx) => (
+                        {candidate.skills.map((skill: string, idx: number) => (
                           <span key={idx} className="px-2 py-0.5 bg-[#3626ce]/20 text-[#c3c0ff] text-[10px] rounded border border-[#c3c0ff]/20">{skill}</span>
                         ))}
                       </div>
@@ -366,12 +392,20 @@ export default function EmployerPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-[#0f172a]/40 backdrop-blur-md p-4 rounded-lg border border-white/5 text-center">
+                      <p className={`text-[10px] font-bold tracking-[0.1em] text-[#bbc9cd] mb-1 ${mono.className}`}>TECH FIT INDEX</p>
+                      <p className="text-2xl font-bold text-[#8aebff]">{selectedCandidate.tech_fit_index?.toFixed(1)}</p>
+                    </div>
+                    <div className="bg-[#0f172a]/40 backdrop-blur-md p-4 rounded-lg border border-white/5 text-center">
+                      <p className={`text-[10px] font-bold tracking-[0.1em] text-[#bbc9cd] mb-1 ${mono.className}`}>SALES FIT INDEX</p>
+                      <p className="text-2xl font-bold text-[#c3c0ff]">{selectedCandidate.sales_fit_index?.toFixed(1)}</p>
+                    </div>
+                    <div className="bg-[#0f172a]/40 backdrop-blur-md p-4 rounded-lg border border-white/5 text-center">
                       <p className={`text-[10px] font-bold tracking-[0.1em] text-[#bbc9cd] mb-1 ${mono.className}`}>AQ SCORE</p>
-                      <p className="text-2xl font-bold text-[#8aebff]">{selectedCandidate.aq}</p>
+                      <p className="text-2xl font-bold text-[#dde4e5]">{selectedCandidate.aq}</p>
                     </div>
                     <div className="bg-[#0f172a]/40 backdrop-blur-md p-4 rounded-lg border border-white/5 text-center">
                       <p className={`text-[10px] font-bold tracking-[0.1em] text-[#bbc9cd] mb-1 ${mono.className}`}>IQ SCORE</p>
-                      <p className="text-2xl font-bold text-[#c3c0ff]">{selectedCandidate.iq}</p>
+                      <p className="text-2xl font-bold text-[#dde4e5]">{selectedCandidate.iq}</p>
                     </div>
                   </div>
 

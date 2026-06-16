@@ -25,11 +25,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${hanken.variable} ${jetbrains.variable} font-sans flex min-h-screen flex-col bg-[#0e1416] text-[#dde4e5]`}>
-        <Navbar />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+    <html lang="en" className={`${hanken.variable} ${jetbrains.variable}`}>
+      <body className="font-sans antialiased bg-background text-slate-200">
+        <div className="flex min-h-screen flex-col bg-cyber-grid bg-[length:50px_50px]">
+          <Navbar />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );

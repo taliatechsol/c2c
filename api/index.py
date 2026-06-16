@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import os
@@ -6,6 +7,7 @@ import sys
 import json
 import random
 import re
+from api.pdf_generator import generate_student_pdf
 
 # Add service directories to sys.path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,6 +55,13 @@ class StudentOnboard(BaseModel):
 class AssessmentSubmit(BaseModel):
     student_id: str
     responses: List[Dict[str, Any]] # Expected: { "item_id": "...", "response": "..." }
+
+class FeedbackSubmit(BaseModel):
+    student_id: str
+    reviewer_email: str
+    reviewer_role: str
+    dimension_scores: Dict[str, float]
+    feedback_text: str
 
 class AuditRequest(BaseModel):
     candidate: Dict[str, Any]
@@ -382,6 +391,17 @@ async def get_leads():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/feedback/submit")
+async def submit_feedback(submit: FeedbackSubmit):
+    client = get_client()
+    if not client: raise HTTPException(status_code=500, detail="Supabase client not initialized")
+    try:
+        result_payload = submit.dict()
+        res = client.table("peer_feedback").insert(result_payload).execute()
+        return res.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/student/{student_id}")
 async def get_student(student_id: str):
     client = get_client()
@@ -390,13 +410,75 @@ async def get_student(student_id: str):
         student_res = client.table("students").select("*").eq("id", student_id).execute()
         if not student_res.data:
             raise HTTPException(status_code=404, detail="Student not found")
-        
+
         assessment_res = client.table("assessments").select("*").eq("student_id", student_id).execute()
+        
+        peer_feedback_res = client.table("peer_feedback").select("*").eq("student_id", student_id).execute()
+        peer_scores = None
+        if peer_feedback_res.data:
+            num_feedbacks = len(peer_feedback_res.data)
+            sums = {}
+            for pf in peer_feedback_res.data:
+                for dim, score in pf.get("dimension_scores", {}).items():
+                    sums[dim] = sums.get(dim, 0) + score
+            peer_scores = {dim: total / num_feedbacks for dim, total in sums.items()}
+
         return {
             "student": student_res.data[0],
-            "assessments": assessment_res.data
+            "assessments": assessment_res.data,
+            "peer_scores": peer_scores
         }
     except HTTPException: raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/employer/candidates")
+async def get_employer_candidates():
+    client = get_client()
+    if not client: raise HTTPException(status_code=500, detail="Supabase client not initialized")
+    try:
+        students_res = client.table("students").select("*").execute()
+        if not students_res.data:
+            return []
+
+        students = students_res.data
+        student_ids = [s["id"] for s in students]
+
+        assessments_res = client.table("assessments").select("*").in_("student_id", student_ids).execute()
+        assessments = assessments_res.data or []
+
+        latest_assessments = {}
+        for a in assessments:
+            student_id = a["student_id"]
+            if student_id not in latest_assessments or a.get("created_at", "") > latest_assessments[student_id].get("created_at", ""):
+                latest_assessments[student_id] = a
+
+        results = []
+        for s in students:
+            assessment = latest_assessments.get(s["id"])
+            if not assessment:
+                continue
+
+            scores = assessment.get("dimension_scores", {})
+            iq = scores.get("IQ", 0)
+            aq = scores.get("AQ", 0)
+            eq = scores.get("EQ", 0)
+            sq = scores.get("SQ", 0)
+            spq = scores.get("SpQ", 0)
+
+            tech_fit_index = (iq + aq) / 2
+            sales_fit_index = (eq + sq + spq) / 3
+
+            results.append({
+                "id": s["id"],
+                "name": s.get("full_name", "Unknown"),
+                "primary_profile": assessment.get("primary_profile", "Unknown"),
+                "dimension_scores": scores,
+                "tech_fit_index": tech_fit_index,
+                "sales_fit_index": sales_fit_index
+            })
+
+        return results
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -422,4 +504,18 @@ async def portfolio(request: PortfolioRequest):
         return generate_portfolio_json(request.dict())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/alerts/student/{student_id}")
+async def get_student_alerts(student_id: str):
+    client = get_client()
+    if not client: raise HTTPException(status_code=500, detail="Supabase client not initialized")
+    try:
+        # Fetch alerts and join with market_leads
+        # Supabase Python client handles joins by referencing the foreign key table
+        alerts_res = client.table("match_alerts").select("*, market_leads(*)").eq("student_id", student_id).order("created_at", desc=True).execute()
+        return alerts_res.data
+    except Exception as e:
+        print(f"Error fetching alerts (table might not exist yet): {e}")
+        return []
+
 

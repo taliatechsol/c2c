@@ -13,3 +13,4 @@ sentence-transformers
 pypdf
 playwright
 html2text
+fpdf2

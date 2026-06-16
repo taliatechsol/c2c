@@ -78,5 +78,56 @@ def main():
     except Exception as e:
         print(f"❌ Storage Sync Failed: {e}")
 
+    # 5. Matching Phase
+    try:
+        print("🤝 Starting Matching Phase...")
+        from storage.supabase_sync import get_client
+        client = get_client()
+        
+        # Recommendation mapping
+        RECOMMENDATION_MAPPING = {
+            "Builder": ["Engineer", "Developer", "Researcher", "Architect"],
+            "Leader": ["Manager", "Lead", "Culture", "Director"],
+            "Rainmaker": ["Sales", "Partnership", "Advocate", "Growth"],
+            "Anchor": ["Operations", "QA", "SRE", "DevOps", "Analyst", "Data"]
+        }
+        
+        # Get all students
+        students_res = client.table("students").select("id").execute()
+        if students_res.data:
+            student_ids = [s["id"] for s in students_res.data]
+            assessments_res = client.table("assessments").select("*").in_("student_id", student_ids).execute()
+            
+            latest_assessments = {}
+            for a in assessments_res.data or []:
+                student_id = a["student_id"]
+                if student_id not in latest_assessments or a.get("created_at", "") > latest_assessments[student_id].get("created_at", ""):
+                    latest_assessments[student_id] = a
+                    
+            new_alerts = []
+            for item in enriched:
+                title = item.get("name", "")
+                url = item.get("url")
+                if not title or not url: continue
+                
+                for s_id, assessment in latest_assessments.items():
+                    profile = assessment.get("primary_profile")
+                    if profile in RECOMMENDATION_MAPPING:
+                        keywords = RECOMMENDATION_MAPPING[profile]
+                        if any(kw.lower() in title.lower() for kw in keywords):
+                            new_alerts.append({
+                                "student_id": s_id,
+                                "lead_url": url,
+                                "score": item.get("ai_score", 0)
+                            })
+            
+            if new_alerts:
+                print(f"🔔 Creating {len(new_alerts)} match alerts...")
+                client.table("match_alerts").insert(new_alerts).execute()
+            else:
+                print("No new matches found.")
+    except Exception as e:
+        print(f"❌ Matching Phase Failed: {e}")
+
 if __name__ == "__main__":
     main()

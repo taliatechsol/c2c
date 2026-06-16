@@ -2,22 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 221, 228, 229;
-  --background-rgb: 14, 20, 22;
+@layer base {
+  :root {
+    --background: 195 15% 7%;
+    --foreground: 195 10% 88%;
+  }
+
+  body {
+    @apply bg-background text-slate-200 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Custom scrollbar for cyber aesthetic */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-800 rounded-full hover:bg-primary transition-colors;
+  }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background-color: rgb(var(--background-rgb));
-  font-family: var(--font-hanken), sans-serif;
+@layer components {
+  .glass-panel {
+    @apply backdrop-blur-xl bg-slate-900/80 border border-white/10 shadow-cyan-glow;
+  }
+
+  .cyber-button-primary {
+    @apply bg-secondary-dark text-white font-semibold py-2 px-6 rounded-md 
+           transition-all duration-200 hover:shadow-cyan-glow hover:scale-[1.02] 
+           active:scale-[0.98] border border-white/10;
+  }
+
+  .cyber-button-ghost {
+    @apply bg-transparent text-primary border border-slate-700 font-semibold py-2 px-6 rounded-md 
+           transition-all duration-200 hover:border-primary hover:text-white hover:bg-primary/10;
+  }
+
+  .cyber-input {
+    @apply bg-slate-950/50 border-b-2 border-slate-700 text-white px-4 py-2 
+           focus:outline-none focus:border-primary focus:shadow-cyan-glow transition-all;
+  }
+
+  .segmented-progress {
+    @apply relative h-2 bg-slate-800 rounded-full overflow-hidden;
+    background-image: linear-gradient(to right, transparent 90%, #0e1416 90%);
+    background-size: 10% 100%;
+  }
 }
 
 @layer utilities {
-  .font-mono {
-    font-family: var(--font-jetbrains), monospace;
+  .text-glow {
+    text-shadow: 0 0 10px rgba(138, 235, 255, 0.4);
   }
-  .font-sans {
-    font-family: var(--font-hanken), sans-serif;
+  
+  .border-glow {
+    box-shadow: inset 0 0 10px rgba(138, 235, 255, 0.2);
   }
 }

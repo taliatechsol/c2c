@@ -19,11 +19,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
+import GrowthRadar from "@/components/charts/GrowthRadar";
 
 export default function Dashboard() {
   const { id } = useParams();
   
   const [data, setData] = useState<any>(null);
+  const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('intelligence');
@@ -37,6 +39,16 @@ export default function Dashboard() {
         }
         const json = await res.json();
         setData(json);
+
+        try {
+          const alertsRes = await fetch(`/api/alerts/student/${id}`);
+          if (alertsRes.ok) {
+            const alertsJson = await alertsRes.json();
+            setAlerts(alertsJson);
+          }
+        } catch (e) {
+          console.error("Alerts fetch error", e);
+        }
       } catch (err: any) {
         console.error(err);
         // Fallback for demo purposes
@@ -108,7 +120,10 @@ export default function Dashboard() {
             <button className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#2fd9f4]/5 hover:bg-[#2fd9f4]/10 border border-[#2fd9f4]/20 rounded font-mono text-[10px] font-bold uppercase tracking-widest text-[#2fd9f4] transition-all">
               <Share2 className="w-3.5 h-3.5" /> Share
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#3626ce]/10 hover:bg-[#3626ce]/20 border border-[#3626ce]/30 rounded font-mono text-[10px] font-bold uppercase tracking-widest text-[#c3c0ff] transition-all">
+            <button 
+              onClick={() => window.open(`/api/export/student/${id}`, '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-[#3626ce]/10 hover:bg-[#3626ce]/20 border border-[#3626ce]/30 rounded font-mono text-[10px] font-bold uppercase tracking-widest text-[#c3c0ff] transition-all"
+            >
               <Download className="w-3.5 h-3.5" /> Export
             </button>
             <div className="w-8 h-8 rounded bg-gradient-to-br from-[#2fd9f4] to-[#3626ce] p-[1px]">
@@ -187,7 +202,7 @@ export default function Dashboard() {
 
               <div className="flex flex-col xl:flex-row items-center gap-12">
                 <div className="w-full max-w-[400px] aspect-square relative">
-                  <RadarChart scores={scores} />
+                  <GrowthRadar data={scores} peerData={data?.peer_scores} />
                 </div>
                 
                 <div className="flex-1 grid grid-cols-1 gap-4 w-full">
@@ -210,9 +225,9 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Development Report - Targeted Directives */}
-          <div className="lg:col-span-5">
-            <div className="bg-black/20 border border-[#2fd9f4]/10 rounded-3xl p-8 h-full relative overflow-hidden">
+          {/* Development Report - Targeted Directives & Match Alerts */}
+          <div className="lg:col-span-5 flex flex-col gap-8">
+            <div className="bg-black/20 border border-[#2fd9f4]/10 rounded-3xl p-8 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#2fd9f4] to-transparent"></div>
               
               <div className="mb-10">
@@ -252,133 +267,46 @@ export default function Dashboard() {
                  </Link>
               </div>
             </div>
+
+            {/* Match Alerts */}
+            {alerts && alerts.length > 0 && (
+              <div className="bg-black/20 border border-[#3626ce]/10 rounded-3xl p-8 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#3626ce] to-transparent"></div>
+                
+                <div className="mb-10">
+                  <h2 className="text-2xl font-black text-white font-mono uppercase tracking-widest flex items-center gap-3">
+                    <Target className="w-6 h-6 text-[#3626ce]" /> Match_Alerts
+                  </h2>
+                  <p className="text-[10px] text-[#3626ce]/50 uppercase tracking-[0.3em] font-bold mt-2">Market_Scout_Sync</p>
+                </div>
+
+                <div className="space-y-4">
+                  {alerts.slice(0, 5).map((alert: any, i: number) => (
+                    <a key={i} href={alert.lead_url} target="_blank" rel="noopener noreferrer" className="block group relative">
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#2fd9f4]/20 to-[#3626ce]/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                      <div className="relative bg-black/60 border border-[#3626ce]/10 p-5 rounded-2xl flex flex-col gap-2 backdrop-blur-sm transition-all group-hover:bg-black/40 group-hover:translate-x-1">
+                        <div className="flex justify-between items-start gap-4">
+                          <h3 className="text-[#dde4e5] font-sans font-bold group-hover:text-white transition-colors line-clamp-1">
+                            {alert.market_leads?.name || 'Job Opportunity'}
+                          </h3>
+                          <span className="shrink-0 px-2 py-0.5 bg-[#3626ce]/10 border border-[#3626ce]/20 rounded font-mono text-[10px] font-bold text-[#c3c0ff]">
+                            {alert.score || alert.market_leads?.ai_score || 0}%
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs font-mono text-[#c3c0ff]/60 uppercase tracking-widest mt-1">
+                          <span className="flex items-center gap-1 truncate"><Trophy className="w-3 h-3 shrink-0" /> <span className="truncate">{alert.market_leads?.company || 'Unknown'}</span></span>
+                          <span className="flex items-center gap-1 text-[#2fd9f4] shrink-0 ml-auto"><ExternalLink className="w-3 h-3" /> View</span>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
       </main>
     </div>
-  );
-}
-
-function RadarChart({ scores }: { scores: Record<string, number> }) {
-  const size = 100;
-  const centerX = size / 2;
-  const centerY = size / 2;
-  const radius = (size / 2) * 0.75;
-  const categories = Object.keys(scores);
-  const data = Object.values(scores);
-
-  const points = useMemo(() => data.map((value, i) => {
-    const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-    const r = (value / 100) * radius;
-    return {
-      x: centerX + r * Math.cos(angle),
-      y: centerY + r * Math.sin(angle),
-    };
-  }), [data, categories.length, radius]);
-
-  const pointsStr = points.map((p) => `${p.x},${p.y}`).join(" ");
-
-  const gridLines = [20, 40, 60, 80, 100].map((level) => {
-    const r = (level / 100) * radius;
-    return categories.map((_, i) => {
-      const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-      return `${centerX + r * Math.cos(angle)},${centerY + r * Math.sin(angle)}`;
-    }).join(" ");
-  });
-
-  return (
-    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
-      <defs>
-        <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="1.5" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-        <linearGradient id="poly-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#2fd9f4" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#3626ce" stopOpacity="0.1" />
-        </linearGradient>
-      </defs>
-
-      {/* Grid Lines */}
-      {gridLines.map((pts, i) => (
-        <polygon
-          key={i}
-          points={pts}
-          fill="none"
-          stroke="rgba(47, 217, 244, 0.1)"
-          strokeWidth="0.3"
-          className={i === gridLines.length - 1 ? "stroke-[#2fd9f4]/20" : ""}
-        />
-      ))}
-      
-      {/* Axis Lines */}
-      {categories.map((_, i) => {
-        const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-        return (
-          <line
-            key={i}
-            x1={centerX}
-            y1={centerY}
-            x2={centerX + radius * Math.cos(angle)}
-            y2={centerY + radius * Math.sin(angle)}
-            stroke="rgba(47, 217, 244, 0.05)"
-            strokeWidth="0.3"
-          />
-        );
-      })}
-      
-      {/* Category Labels */}
-      {categories.map((cat, i) => {
-        const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-        const x = centerX + (radius + 14) * Math.cos(angle);
-        const y = centerY + (radius + 8) * Math.sin(angle);
-        return (
-          <text
-            key={i}
-            x={x}
-            y={y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="text-[4px] font-bold fill-[#2fd9f4]/40 font-mono tracking-widest uppercase"
-          >
-            {cat}
-          </text>
-        );
-      })}
-      
-      {/* Data Polygon */}
-      <polygon
-        points={pointsStr}
-        fill="url(#poly-grad)"
-        stroke="#2fd9f4"
-        strokeWidth="1"
-        strokeLinejoin="round"
-        filter="url(#neon-glow)"
-        className="animate-[pulse_4s_easeInOut_infinite] transition-all duration-1000"
-      />
-      
-      {/* Data Points */}
-      {points.map((p, i) => (
-        <g key={i} className="group cursor-help">
-          <circle 
-            cx={p.x} 
-            cy={p.y} 
-            r="1.5" 
-            fill="#0e1416" 
-            stroke="#2fd9f4" 
-            strokeWidth="0.5"
-            className="group-hover:r-2 transition-all"
-          />
-          <circle 
-            cx={p.x} 
-            cy={p.y} 
-            r="3" 
-            fill="#2fd9f4" 
-            className="opacity-0 group-hover:opacity-20 transition-all"
-          />
-        </g>
-      ))}
-    </svg>
   );
 }
