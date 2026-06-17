@@ -177,11 +177,32 @@ async def onboard_student(student: StudentOnboard, client = Depends(require_supa
     domain = student.email.split("@")[-1]
     try:
         inst_res = client.table("institutions").select("*").eq("domain", domain).execute()
-        if not inst_res.data:
-            raise HTTPException(status_code=400, detail="Institution domain not registered")
         
+        if not inst_res.data:
+            # Check if a default/sandbox institution exists, otherwise create it
+            sandbox_res = client.table("institutions").select("*").eq("domain", "sandbox.c2c.edu").execute()
+            if sandbox_res.data:
+                inst_data = sandbox_res.data[0]
+            else:
+                # Create a sandbox institution
+                sandbox_payload = {
+                    "name": "Global Sandbox University",
+                    "type": "University",
+                    "domain": "sandbox.c2c.edu",
+                    "location": "Cloud Node"
+                }
+                new_inst = client.table("institutions").insert(sandbox_payload).execute()
+                inst_data = new_inst.data[0] if new_inst.data else None
+            
+            if not inst_data:
+                raise HTTPException(status_code=400, detail="Institution domain not registered and Sandbox allocation failed")
+            
+            institution_id = inst_data["id"]
+        else:
+            institution_id = inst_res.data[0]["id"]
+            
         data = student.dict()
-        data["institution_id"] = inst_res.data[0]["id"]
+        data["institution_id"] = institution_id
         res = client.table("students").insert(data).execute()
         return res.data
     except HTTPException:
@@ -192,8 +213,14 @@ async def onboard_student(student: StudentOnboard, client = Depends(require_supa
 
 @router.post("/onboard/employer")
 async def onboard_employer(employer: EmployerOnboard, client = Depends(require_supabase), current_user = Depends(get_current_user)):
-    # Simple success endpoint for employer onboarding
-    return {"status": "success", "employer": employer.dict()}
+    try:
+        data = employer.dict()
+        data["auth_id"] = current_user.user.id
+        res = client.table("employers").insert(data).execute()
+        return res.data
+    except Exception as e:
+        logger.error(f"ERROR onboard_employer: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/assessment/generate")
 async def generate_assessment(num_per_section: int = 25, client = Depends(require_supabase), current_user = Depends(get_current_user)):
@@ -286,8 +313,21 @@ async def get_cohort_report(institution_id: str, client = Depends(require_supaba
     metadata = getattr(current_user, "user_metadata", {}) or {}
     role = metadata.get("role")
     email = getattr(current_user, "email", "") or ""
-    if not (role == "admin" or email.endswith("@taliatech.in")):
-        if role != "institution" or str(metadata.get("profile_id")) != str(institution_id):
+    
+    try:
+        inst_check = client.table("institutions").select("domain").eq("id", institution_id).execute()
+        inst_domain = inst_check.data[0]["domain"] if inst_check.data else None
+        email_domain = email.split("@")[-1] if email else ""
+        
+        is_authorized = False
+        if role == "admin" or email.endswith("@taliatech.in"):
+            is_authorized = True
+        elif role == "institution" and str(metadata.get("profile_id")) == str(institution_id):
+            is_authorized = True
+        elif inst_domain and email_domain == inst_domain:
+            is_authorized = True
+            
+        if not is_authorized:
             raise HTTPException(status_code=403, detail="Access denied: unauthorized institution telemetry access")
             
     try:
@@ -340,9 +380,21 @@ async def get_student(student_id: str, client = Depends(require_supabase), curre
         if str(metadata.get("profile_id")) != str(student_id):
             raise HTTPException(status_code=403, detail="Access denied: cannot view other student profiles")
     elif role == "institution":
+        # Get the student's email to compare domains
+        student_check = client.table("students").select("institution_id, email").eq("id", student_id).execute()
+        if not student_check.data:
+            raise HTTPException(status_code=404, detail="Student not found")
+        
+        s_email = student_check.data[0].get("email") or ""
+        s_domain = s_email.split("@")[-1] if s_email else ""
+        tpo_domain = email.split("@")[-1] if email else ""
+        
+        # Allow if TPO profile matches or if email domain matches student email domain!
         inst_id = metadata.get("profile_id")
-        student_check = client.table("students").select("institution_id").eq("id", student_id).execute()
-        if not student_check.data or str(student_check.data[0].get("institution_id")) != str(inst_id):
+        is_owner = inst_id and str(student_check.data[0].get("institution_id")) == str(inst_id)
+        is_domain_match = tpo_domain and s_domain == tpo_domain
+        
+        if not (is_owner or is_domain_match):
             raise HTTPException(status_code=403, detail="Access denied: student does not belong to your institution")
     elif role == "employer":
         pass

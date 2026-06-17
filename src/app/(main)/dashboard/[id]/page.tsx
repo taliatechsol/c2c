@@ -24,6 +24,7 @@ import GrowthRadar from "@/components/charts/GrowthRadar";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import type { DimensionScores, Alert } from "@/types";
+import { authFetch } from '@/lib/authFetch';
 
 interface DashboardData {
   student: {
@@ -63,7 +64,7 @@ export default function Dashboard() {
     if (authLoading) return;
     async function fetchData() {
       try {
-        const res = await fetch(`/api/student/${id}`);
+        const res = await authFetch(`/api/student/${id}`);
         if (!res.ok) {
           throw new Error("DASHBOARD_FETCH_ERROR");
         }
@@ -71,7 +72,7 @@ export default function Dashboard() {
         setData(json);
 
         try {
-          const alertsRes = await fetch(`/api/alerts/student/${id}`);
+          const alertsRes = await authFetch(`/api/alerts/student/${id}`);
           if (alertsRes.ok) {
             const alertsJson = await alertsRes.json();
             setAlerts(alertsJson);

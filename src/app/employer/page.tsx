@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { authFetch } from '@/lib/authFetch';
 
 export default function EmployerPage() {
   const { user, loading: authLoading } = useRequireAuth({ allowedRoles: ['employer', 'admin'] });
@@ -45,7 +46,7 @@ export default function EmployerPage() {
     const fetchCandidates = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/employer/candidates");
+        const res = await authFetch("/api/employer/candidates");
         if (res.ok) {
           const data = await res.json();
           const mappedData = data.map((item: any, idx: number): Candidate => ({

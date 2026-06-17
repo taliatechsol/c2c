@@ -24,6 +24,7 @@ import {
 import { useRequireAuth } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { supabase } from "@/lib/supabase";
+import { authFetch } from '@/lib/authFetch';
 
 interface TPOCohortData {
   averages: {
@@ -61,7 +62,7 @@ export default function TPODashboard() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/cohort/${id}`);
+        const res = await authFetch(`/api/cohort/${id}`);
         if (res.ok) {
           const json = await res.json();
           setData(json);

@@ -17,6 +17,7 @@ import {
   User
 } from 'lucide-react';
 import { useRequireAuth } from '@/hooks/useAuth';
+import { authFetch } from '@/lib/authFetch';
 
 type Role = 'student' | 'institution' | 'employer';
 
@@ -92,7 +93,7 @@ export default function Onboard() {
 
     try {
       if (activeRole === 'student') {
-        const res = await fetch('/api/onboard/student', {
+        const res = await authFetch('/api/onboard/student', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -121,7 +122,7 @@ export default function Onboard() {
         }
 
       } else if (activeRole === 'institution') {
-        const res = await fetch('/api/onboard/institution', {
+        const res = await authFetch('/api/onboard/institution', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(institutionForm),
@@ -145,7 +146,7 @@ export default function Onboard() {
         }
 
       } else if (activeRole === 'employer') {
-        const res = await fetch('/api/onboard/employer', {
+        const res = await authFetch('/api/onboard/employer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(employerForm),
