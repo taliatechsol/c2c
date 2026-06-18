@@ -38,11 +38,6 @@ USING (institution_id IN (
     SELECT id FROM institutions WHERE auth_id = auth.uid()
 ));
 
-CREATE POLICY "Admin full access whitelist" 
-ON institution_whitelist USING (
-    EXISTS (SELECT 1 FROM admin_users WHERE auth_id = auth.uid())
-);
-
 
 
 -- 4. Secure function for student onboarding to check whitelist without reading whole table
