@@ -1,7 +1,9 @@
 -- Migration: TPO / Institution Pre-Verification Layer
 -- Description: Adds tracking fields to students and creates a whitelist for institutions
 
--- 1. Add fields to students table
+-- 1. Add fields to students and institutions tables
+ALTER TABLE institutions ADD COLUMN IF NOT EXISTS auth_id UUID UNIQUE;
+
 ALTER TABLE students 
 ADD COLUMN IF NOT EXISTS institution_id BIGINT REFERENCES institutions(id) ON DELETE SET NULL,
 ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;
